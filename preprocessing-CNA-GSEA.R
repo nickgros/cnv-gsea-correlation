@@ -15,30 +15,24 @@ cluster <- makeCluster(spec = num_cores, type = "FORK") #TODO: Fork only works o
 # Get command-line arguments
 args <- commandArgs(TRUE)
 configFile <- args[1]
-
+configFile <- "config.R"
 source(configFile)
 # Read in all of the user input files and process them so they're the right format
+cat("\nReading",cnvInput,"\n")
 cnv  <- fread(cnvInput, data.table = F)
 rownames(cnv) <- cnv[,1]
 cnv <- as.data.frame(t(cnv[,-1]))
-gsea <- fread(gseaInput)
 
-if(separateSamples) {
-  separation <- fread(separationInput)
-}
 
 # CNA is gene level, must convert this to band level
 gene_to_band_table <- fread("data/mart_export_chrom_bands_sorted.txt", data.table = F)
 gene_to_band_table$chrBand <- paste(gene_to_band_table$`Chromosome Name`, gsub("(\\.).*", "", gene_to_band_table$Band), sep="")
 
 # For each band, look up the copy number value of associated genes, set the CNV of that band to the mean gene CNV
-# TODO: fix that this makes duplicate rows, can be fixed by removing dupes but should be fixed algorithmically
-#cnv <- cnv %>% rownames_to_column("sample")
-clusterExport(cluster, varlist = "gene_to_band_table")
+cat("\nCalculating copy number by band (this may take a minute if you have a lot of samples)\n")
+clusterExport(cluster, varlist = c("cnv", "gene_to_band_table"))
 cnv_by_band <- parApply(cluster, cnv, 1, function(x){
   temp_band_row <- data.frame()
-  #cat("\nProcessing sample ", x[[1]])
-  #sample <- x[[1]]
   data <- as.numeric(x)
   names(data) <- colnames(cnv)
   for(band in unique(gene_to_band_table$chrBand)){
@@ -48,7 +42,9 @@ cnv_by_band <- parApply(cluster, cnv, 1, function(x){
   }
   return(temp_band_row)
 })
-stopCluster()
+stopCluster(cluster)
 cnv_by_band <- cnv_by_band %>% bind_rows(.id = "sample")
 
+cat("\nWriting",byBandFile,"\n")
 fwrite(x = cnv_by_band, file = byBandFile, quote = F, sep = '\t')
+cat("\nDone preprocessing!\n")

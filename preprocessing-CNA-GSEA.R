@@ -15,7 +15,7 @@ cluster <- makeCluster(spec = num_cores, type = "FORK") #TODO: Fork only works o
 # Get command-line arguments
 args <- commandArgs(TRUE)
 configFile <- args[1]
-configFile <- "config.R"
+
 source(configFile)
 # Read in all of the user input files and process them so they're the right format
 cat("\nReading",cnvInput,"\n")

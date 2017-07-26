@@ -55,7 +55,7 @@ if (separateSamples) {
     #Nest CNV data into a list that separates each band (this will make parallel processing easier)
     temp_nested_by_band <- temp_cnv_by_band %>% nest(colnames(temp_cnv_by_band)[which(colnames(temp_cnv_by_band) != "band")])
     clusterExport(cluster, varlist="temp_nested_by_band")
-    outfile <- paste(correlOutputPrefix,"-",category,"-correlation.txt",sep="")
+    outfile <- paste(correlOutputPrefix,"-",colnames(sample_categories)[2],"-",category,"-correlation.txt",sep="")
     temp_correl_table <- writeCorrelTable()
     if (maxP < 1) {
       temp_correl_table %>% filter(p.value < maxP)
@@ -70,9 +70,4 @@ if (separateSamples) {
   }
   fwrite(x = temp_correl_table, file=outfile, quote = F, col.names = T, sep = '\t')
 }
-stopCluster(cl)
-
-
-
-
-names(test.table) <- replicate(paste(letters[runif(n = 20, min = 1, max=26)], collapse = ""), n = length(test.table))
+stopCluster(cluster)

@@ -12,6 +12,7 @@ args <- commandArgs(TRUE)
 configFile <- args[1]
 
 source(configFile)
+cat("\nReading in files...")
 # Read in all of the user input files and process them so they're the right format
 cnv_by_band <- fread(byBandFile, data.table = F)
 #For some bands, there are not enough genes with known copy number to get a CNV value, so remove the NA bands
@@ -24,6 +25,7 @@ if (separateSamples) {
 }
 
 if (varianceThreshold > 0) {
+  cat("\nRemoving samples with variance below percentile",varianceThreshold*100)
   cnv_nested_by_patient <- cnv_by_band %>% nest(c("band", "cnv"))
   # Remove samples with low CNV variance - strengthens noise and removes samples of low tumor purity
   # currently removing bottom 50%
@@ -51,23 +53,27 @@ source("writeCorrelTable.R")
 if (separateSamples) {
   for(category in levels(sample_categories[,2])) {
     current_samples <- sample_categories[,1][which(sample_categories[,2] == category)]
-    temp_cnv_by_band <- cnv_by_band[which(cnv_by_band$sample %in% current_samples),]
-    #Nest CNV data into a list that separates each band (this will make parallel processing easier)
-    temp_nested_by_band <- temp_cnv_by_band %>% nest(colnames(temp_cnv_by_band)[which(colnames(temp_cnv_by_band) != "band")])
-    clusterExport(cluster, varlist="temp_nested_by_band")
-    outfile <- paste(correlOutputPrefix,"-",colnames(sample_categories)[2],"-",category,"-correlation.txt",sep="")
-    temp_correl_table <- writeCorrelTable()
-    if (maxP < 1) {
+    current_samples <- current_samples[which(current_samples %in% colnames(gsea))]
+    if (length(current_samples) <= 1) {
+      cat("\nToo few samples found for category ",category," (", length(current_samples), "). Skipping...",sep="")
+    } else {
+      cat("\nProcessing category",category,"with",length(current_samples),"samples")
+      temp_cnv_by_band <- cnv_by_band[which(cnv_by_band$sample %in% current_samples),]
+      #Nest CNV data into a list that separates each band (this will make parallel processing easier)
+      temp_nested_by_band <- temp_cnv_by_band %>% nest(colnames(temp_cnv_by_band)[which(colnames(temp_cnv_by_band) != "band")])
+      clusterExport(cluster, varlist="temp_nested_by_band")
+      outfile <- paste(correlOutputPrefix,"-",colnames(sample_categories)[2],"-",category,"-correlation.txt",sep="")
+      temp_correl_table <- writeCorrelTable()
       temp_correl_table %>% filter(p.value < maxP)
+      temp_correl_table %>% arrange(p.value)
+      fwrite(x = temp_correl_table, file=outfile, quote = F, col.names = T, sep = '\t')
     }
-    fwrite(x = temp_correl_table, file=outfile, quote = F, col.names = T, sep = '\t')
   }
 } else {
   clusterExport(cluster, varlist="cnv_by_band")
   temp_correl_table <- writeCorrelTable()
-  if (maxP < 1) {
-    temp_correl_table %>% filter(p.value < maxP)
-  }
+  temp_correl_table %>% filter(p.value < maxP)
+  temp_correl_table %>% arrange(p.value)
   fwrite(x = temp_correl_table, file=outfile, quote = F, col.names = T, sep = '\t')
 }
 stopCluster(cluster)

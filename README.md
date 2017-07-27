@@ -12,6 +12,7 @@ This tool consists of a sequence of R scripts that process the following input f
 ### Prerequisites
 
 * [R](https://cran.r-project.org/)
+
 The following libraries are also required and can be installed in R with install.packages (below)
   * [dplyr](https://cran.r-project.org/web/packages/dplyr/)
   * [tidyr](https://cran.r-project.org/web/packages/tidyr/)
@@ -37,3 +38,11 @@ Rscript preprocessing-CNA-GSEA.R config.R
 Rscript computation-CNA-GSEA.R config.R
 ```
 ...and so on.
+
+### Tips
+
+* Make sure all of your files are formatted the same way as the examples (tab-delimited, samples as columns, sample names match between files)
+
+### Contact
+
+If you have any issues running the script, contact the author

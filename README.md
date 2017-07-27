@@ -1,87 +1,39 @@
 # cnv-gsea-correlation
 
-One Paragraph of project description goes here
+A tool for identifying correlations between chromosomal copy number and gene set enrichment scores (or any other continuous feature) across multiple samples.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+This tool consists of a sequence of R scripts that process the following input files:
+*A table of copy numbers per-gene for each sample
+*A table of gene set enrichment/other feature scores for each sample
+*(Optional) A category for each sample to separate correlative analyses
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
-
-```
-Give examples
+*[R](https://cran.r-project.org/)
+The following libraries are also required and can be installed in R with install.packages (below)
+*[dplyr](https://cran.r-project.org/web/packages/dplyr/)
+*[tidyr](https://cran.r-project.org/web/packages/tidyr/)
+*[ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html)
+*[data.table](https://cran.r-project.org/web/packages/data.table/)
+*parallel (should be installed with R base)
+```R
+install.packages(c("dplyr", "tidyr", "ggplot2", "data.table"))
 ```
 
 ### Installing
 
-A step by step series of examples that tell you have to get a development env running
+Download the package by navigating above or click [here](https://github.com/nickgros/cnv-gsea-correlation/archive/master.zip)
 
-Say what the step will be
+## Running the scripts
 
-```
-Give the example
-```
+Before running the scripts, edit or duplicate the config file (config.R) and specify the file names and parameters for the program. Initially, the config file is set to run on the included example files.
 
-And repeat
+The scripts can be run from the terminal using the Rscript command. Make sure you specify a config file after the program.
 
 ```
-until finished
+Rscript preprocessing-CNA-GSEA.R config.R
+Rscript computation-CNA-GSEA.R config.R
 ```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
+...and so on.
